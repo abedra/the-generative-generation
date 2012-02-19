@@ -1,0 +1,200 @@
+#+TITLE:     The Generative Generation
+#+AUTHOR:    Aaron Bedra
+#+EMAIL:     aaron@aaronbedra.com
+#+LANGUAGE:  en
+
+* Clojurebreaker						      :slide:
+** Start with the shell of a scoring function			      :slide:
+#+begin_src clojure
+  (defn exact-matches
+    "Given two collections, return the number of
+     positions where the collections contain equal
+     items."
+    [c1 c2])
+#+end_src
+** Experiment with comparing data				      :slide:
+#+begin_src clojure :exports both
+  (require '[clojure.data :as data])
+  (data/diff [:r :g :g :b] [:r :y :y :b])
+#+end_src
+
+#+RESULTS:
+: user=> [[nil :g :g] [nil :y :y] [:r nil nil :b]]
+
+** Write exact-matches						      :slide:
+#+begin_src clojure :exports both
+  (defn exact-matches
+    "Given two collections, return the number of
+     positions where the collections contain equal
+     items."
+    [c1 c2]
+    (let [[_ _ matches] (data/diff c1 c2)]
+      (count (remove nil? matches))))
+  
+  (exact-matches [:r :g :g :b] [:r :y :y :b])
+#+end_src
+
+#+RESULTS:
+: user=> 2
+
+** Experiment with unordered matches				      :slide:
+#+begin_src clojure
+  (def example-secret [:r :g :g :b])
+  (frequencies example-secret)
+  
+  (def example-guess [:y :y :y :g])
+  (frequencies example-guess)
+  
+  (select-keys (frequencies example-secret) example-guess)
+  (select-keys (frequencies example-guess) example-secret)
+  (merge-with min {:g 1} {:g 2})
+#+end_src
+** Write unordered-matches					      :slide:
+#+begin_src clojure
+  (defn unordered-matches
+    "Given two collections, return a map where each key is an item
+     in both collections, and each value is the number of times the
+     value occurs in the collection with fewest occurrences."
+    [c1 c2]
+    (let [f1 (select-keys (frequencies c1) c2)
+          f2 (select-keys (frequencies c2) c1)] (merge-with min f1 f2)))
+  
+  (unordered-matches [:r :g :g :b] [:y :y :y :g])
+#+end_src
+** Finally, combine and create the score function		      :slide:
+#+begin_src clojure
+  (defn score [c1 c2]
+    (let [exact (exact-matches c1 c2)
+          unordered (apply + (vals (unordered-matches c1 c2)))]
+      {:exact exact :unordered (- unordered exact)}))
+  
+  (score [:r :g :g :b] [:r :y :y :g])
+#+end_src
+** Pull in math.combinatorics to start testing the scorer	      :slide:
+#+begin_src clojure
+  (require '[clojure.math.combinatorics :as comb])
+  (comb/selections [:r :g :b] 2)
+  
+  (-> (comb/selections [:r :g :b] 2)
+      (comb/selections 2))
+#+end_src
+** Turn this into a function					      :slide:
+#+begin_src clojure
+  (defn generate-turn-inputs
+    "Generate all possible turn inputs for a clojurebreaker game
+     with colors and n columns"
+    [colors n]
+    (-> (comb/selections colors n)
+        (comb/selections 2)))
+#+end_src
+** Running a real test						      :slide:
+#+begin_src clojure
+  (defn score-inputs
+    "Given a sequence of turn inputs, return a lazy sequence of
+     maps with :secret, :guess, and :score."
+    [inputs] (map
+              (fn [[secret guess]] {:secret (seq secret)
+                                    :guess (seq guess)
+                                    :score (score secret guess)})
+              inputs))
+  
+  (->> (generate-turn-inputs [:r :g :b] 2)
+          (score-inputs))
+#+end_src
+** Possibly print the data into a file				      :slide:
+#+begin_src clojure
+  (use 'clojure.pprint)
+  (require '[clojure.java.io :as io])
+  (with-open [w (io/writer "scoring-table")]
+    (binding [*out* w]
+      (print-table (->> (generate-turn-inputs [:r :g :b :y] 4)
+                        (score-inputs)))))
+#+end_src
+** Experimenting with test.generative				      :slide:
+#+begin_src clojure
+  (require '[clojure.test.generative.generators :as gen])
+  (gen/int)
+  (gen/char)
+  (gen/boolean)
+  
+  (gen/vec gen/boolean)
+  (gen/hash-map gen/byte gen/int)
+  
+  (gen/geometric 0.02)
+  (gen/list gen/int 2)
+  (gen/list gen/int (gen/uniform 0 5))
+#+end_src
+** Create a random secret function				      :slide:
+#+begin_src clojure
+  (defn random-secret []
+    (gen/vec #(gen/one-of :r :g :b :y) 4))
+  
+  (random-secret)
+#+end_src
+** Define a set of functions used to test the scorer		      :slide:
+#+begin_src clojure
+  (defn matches
+    [score]
+    (+ (:exact score) (:unordered score)))
+  
+  (defn scoring-is-symmetric
+    [secret guess sc]
+    (= sc (score guess secret)))
+  
+  (defn scoring-is-bounded-by-number-of-pegs 
+    [secret guess score]
+    (<= 0 (matches score) (count secret)))
+  
+  (defn reordering-the-guess-does-not-change-matches 
+    [secret guess sc]
+    (= #{(matches sc)}
+       (into #{}
+             (map
+              #(matches (score secret %))
+              (comb/permutations guess)))))
+#+end_src
+** Define some test data and run the new functions		      :slide:
+#+begin_src clojure
+  (def secret [:r :g :g :b])
+  (def guess [:r :b :b :y])
+  
+  (scoring-is-symmetric secret guess (score secret guess))
+  
+  (scoring-is-bounded-by-number-of-pegs
+   secret guess (score secret guess))
+  
+  (reordering-the-guess-does-not-change-matches
+    secret guess (score secret guess))
+#+end_src
+** Create a full test.generative test				      :slide:
+#+begin_src clojure
+  (use '[clojure.test.generative :only (defspec) :as test])
+  (defspec score-invariants
+    score
+    [^{:tag `random-secret} secret
+     ^{:tag `random-secret} guess]
+    (assert (scoring-is-symmetric secret guess %))
+    (assert (scoring-is-bounded-by-number-of-pegs secret guess %))
+    (assert (reordering-the-guess-does-not-change-matches secret guess %)))
+#+end_src
+** run test							      :slide:
+#+begin_src clojure
+   (test/test-vars #'user/score-invariants)
+#+end_src
+*** go back and try a test that fails
+
+#+TAGS: slide(s)
+
+#+STYLE: <link rel="stylesheet" type="text/css" href="common.css" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="screen.css" media="screen" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="projection.css" media="projection" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="presenter.css" media="presenter" />
+
+#+BEGIN_HTML
+<script type="text/javascript" src="org-html-slideshow.js"></script>
+#+END_HTML
+
+# Local Variables:
+# org-export-html-style-include-default: nil
+# org-export-html-style-include-scripts: nil
+# End:
