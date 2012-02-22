@@ -3,7 +3,9 @@
 #+EMAIL:     aaron@aaronbedra.com
 #+LANGUAGE:  en
 
-* Clojurebreaker						      :slide:
+* The Generative Generation 					      :slide:
+  - Aaron Bedra
+  - Groupon, Inc.
 ** Start with the shell of a scoring function			      :slide:
 #+begin_src clojure
   (defn exact-matches
@@ -37,52 +39,97 @@
 #+RESULTS:
 : user=> 2
 
-** Experiment with unordered matches				      :slide:
-#+begin_src clojure
+** Let's look at frequencies 					      :slide:
+#+begin_src clojure :exports both
   (def example-secret [:r :g :g :b])
-  (frequencies example-secret)
-  
   (def example-guess [:y :y :y :g])
+
   (frequencies example-guess)
+  (frequencies example-secret)  
+#+end_src
+
+#+RESULTS:
+: user=> {:y 3, :g 1}
+: user=> {:r 1, :g 2, :b 1}
+
+** Merging the results 						      :slide:
+#+begin_src clojure :exports both
+  (select-keys (frequencies example-secret)
+               example-guess)
   
-  (select-keys (frequencies example-secret) example-guess)
-  (select-keys (frequencies example-guess) example-secret)
+  (select-keys (frequencies example-guess)
+               example-secret)
+  
   (merge-with min {:g 1} {:g 2})
 #+end_src
+
+#+RESULTS:
+: user=> {:g 2}
+: user=> {:g 1}
+: user=> {:g 1}
+
 ** Write unordered-matches					      :slide:
-#+begin_src clojure
+#+begin_src clojure :exports both
   (defn unordered-matches
-    "Given two collections, return a map where each key is an item
-     in both collections, and each value is the number of times the
-     value occurs in the collection with fewest occurrences."
+    "Given two collections, return a map where each 
+     key is an item in both collections, and each
+     value is the minumum number of occurrences"
     [c1 c2]
     (let [f1 (select-keys (frequencies c1) c2)
-          f2 (select-keys (frequencies c2) c1)] (merge-with min f1 f2)))
+          f2 (select-keys (frequencies c2) c1)] 
+      (merge-with min f1 f2)))
   
   (unordered-matches [:r :g :g :b] [:y :y :y :g])
 #+end_src
+
+#+RESULTS:
+: user=> {:g 1}
+
 ** Finally, combine and create the score function		      :slide:
-#+begin_src clojure
+#+begin_src clojure :exports both
   (defn score [c1 c2]
     (let [exact (exact-matches c1 c2)
-          unordered (apply + (vals (unordered-matches c1 c2)))]
+          unordered (apply +
+                      (vals
+                        (unordered-matches c1 c2)))]
       {:exact exact :unordered (- unordered exact)}))
   
   (score [:r :g :g :b] [:r :y :y :g])
 #+end_src
+
+#+RESULTS:
+: user=> {:exact 1, :unordered 1}
+
+** But WHERE ARE THE TESTS, you ask..				      :slide:
 ** Pull in math.combinatorics to start testing the scorer	      :slide:
-#+begin_src clojure
+#+begin_src clojure :exports both
   (require '[clojure.math.combinatorics :as comb])
   (comb/selections [:r :g :b] 2)
-  
+#+end_src
+
+#+RESULTS:
+: user=> ((:r :r) (:r :g) (:r :b) (:g :r) 
+:         (:g :g) (:g :b) (:b :r) (:b :g) (:b :b))
+
+** We can look at all the possible combinations 		      :slide:
+#+begin_src clojure :exports both
   (-> (comb/selections [:r :g :b] 2)
       (comb/selections 2))
 #+end_src
+
+#+RESULTS:
+: user=> (((:r :r) (:r :r)) ((:r :r) (:r :g)) 
+:         ((:r :r) (:r :b)) ((:r :r) (:g :r)) 
+:         ((:r :r) (:g :g)) ((:r :r) (:g :b)) 
+:         ...
+:         ((:b :b) (:b :g)) ((:b :b) (:b :b)))
+
+
 ** Turn this into a function					      :slide:
 #+begin_src clojure
   (defn generate-turn-inputs
-    "Generate all possible turn inputs for a clojurebreaker game
-     with colors and n columns"
+    "Generate all possible turn inputs for a
+     clojurebreaker game with colors and n columns"
     [colors n]
     (-> (comb/selections colors n)
         (comb/selections 2)))
