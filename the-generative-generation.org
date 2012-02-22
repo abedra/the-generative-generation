@@ -279,7 +279,8 @@
      ^{:tag `random-secret} guess]
     (assert (scoring-is-symmetric secret guess %))
     (assert (scoring-is-bounded-by-number-of-pegs secret guess %))
-    (assert (reordering-the-guess-does-not-change-matches secret guess %)))
+    (assert (reordering-the-guess-does-not-change-matches
+             secret guess %)))
 #+end_src
 ** run test							      :slide:
 #+begin_src clojure :exports both
@@ -305,8 +306,37 @@
 :         :var #'user/score-invariants, :seed 48}
 :        :run-complete
 
-*** go back and try a test that fails
+** What happens when a test fails? 				      :slide:
+#+begin_src clojure :exports both
+  (defn scoring-is-bounded-by-number-of-pegs
+    [secret guess score]
+    (>= 0 (matches score) (count secret)))
+  
+  (test/test-vars #'user/score-invariants)
+#+end_src
 
+#+RESULTS:
+: user=> {:form (#'user/score-invariants [:g :g :g :r] 
+:                                        [:r :r :r :y]), 
+:  :iteration 0, :seed 44, 
+:  :error "Assert failed: (scoring-is-bounded-by-number-of-pegs 
+:                           secret guess %)", 
+:  :exception #<AssertionError java.lang.AssertionError: 
+:    Assert failed: (scoring-is-bounded-by-number-of-pegs 
+:                     secret guess %)>}
+
+** You can paste the form in to find your problem		      :slide:
+#+begin_src clojure :exports both
+  (#'user/score-invariants [:g :y :b :r] [:r :r :y :y])
+#+end_src
+
+#+RESULTS:
+: user => AssertionError Assert failed: 
+:   (scoring-is-bounded-by-number-of-pegs 
+:     secret guess %)  
+:   user/score-invariants (NO_SOURCE_FILE:145)
+
+** Questions?							      :slide:
 #+TAGS: slide(s)
 
 #+STYLE: <link rel="stylesheet" type="text/css" href="common.css" />
