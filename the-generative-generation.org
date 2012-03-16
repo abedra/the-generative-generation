@@ -387,6 +387,7 @@
   
 #+end_src
 ** References							      :slide:
+   - This talk [[http://github.com/abedra/the-generative-generation][github.com/abedra/the-generative-generation]]
    - Test Generative [[http://github.com/clojure/test.generative][github.com/clojure/test.generative]]
    - Programming Clojure, 2nd Edition [[http://pragprog.com/book/shcloj2/programming-clojure][pragprog.com/book/shcloj2/programming-clojure]]
    - Haskell's Quick Check [[http://www.haskell.org/haskellwiki/Introduction_to_QuickCheck][www.haskell.org/haskellwiki/Introduction_to_QuickCheck]]
