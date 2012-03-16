@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="The Generative Generation"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-03-16 09:47:39 PDT"/>
+<meta name="generated" content="2012-03-16 13:09:35 PDT"/>
 <meta name="author" content="Aaron Bedra"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -33,37 +33,36 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 The Generative Generation</a>
+<li><a href="#sec-1">1 The Generative Generation</a></li>
+<li><a href="#sec-2">2 Mastermind</a>
 <ul>
-<li><a href="#sec-1-1">1.1 Start with the shell of a scoring function</a></li>
-<li><a href="#sec-1-2">1.2 Experiment with comparing data</a></li>
-<li><a href="#sec-1-3">1.3 Write exact-matches</a></li>
-<li><a href="#sec-1-4">1.4 Let's look at frequencies</a></li>
-<li><a href="#sec-1-5">1.5 Merging the results</a></li>
-<li><a href="#sec-1-6">1.6 Write unordered-matches</a></li>
-<li><a href="#sec-1-7">1.7 Finally, combine and create the score function</a></li>
-<li><a href="#sec-1-8">1.8 But WHERE ARE THE TESTS, you ask..</a></li>
-<li><a href="#sec-1-9">1.9 math.combinatorics</a></li>
-<li><a href="#sec-1-10">1.10 We can look at all the possible combinations</a></li>
-<li><a href="#sec-1-11">1.11 And turn it into a function</a></li>
-<li><a href="#sec-1-12">1.12 Writing a real test</a></li>
-<li><a href="#sec-1-13">1.13 Giving it a spin</a></li>
-<li><a href="#sec-1-14">1.14 Manually examine the data</a></li>
-<li><a href="#sec-1-15">1.15 You want me to do what?</a></li>
-<li><a href="#sec-1-16">1.16 Experimenting with test.generative</a></li>
-<li><a href="#sec-1-17">1.17 Create a random secret function</a></li>
-<li><a href="#sec-1-18">1.18 Define a set of functions used to test the scorer</a></li>
-<li><a href="#sec-1-19">1.19 Test functions continued</a></li>
-<li><a href="#sec-1-20">1.20 Define some test data and run the new functions</a></li>
-<li><a href="#sec-1-21">1.21 Create a full test.generative test</a></li>
-<li><a href="#sec-1-22">1.22 run test</a></li>
-<li><a href="#sec-1-23">1.23 What happens when a test fails?</a></li>
-<li><a href="#sec-1-24">1.24 You can paste the form in to find your problem</a></li>
-<li><a href="#sec-1-25">1.25 Practical cases</a></li>
-<li><a href="#sec-1-26">1.26 Another</a></li>
-<li><a href="#sec-1-27">1.27 And of course</a></li>
-<li><a href="#sec-1-28">1.28 References</a></li>
-<li><a href="#sec-1-29">1.29 Questions?</a></li>
+<li><a href="#sec-2-1">2.1 Let's begin</a></li>
+<li><a href="#sec-2-2">2.2 Experiment by comparing data with diff</a></li>
+<li><a href="#sec-2-3">2.3 exact-matches</a></li>
+<li><a href="#sec-2-4">2.4 Frequencies</a></li>
+<li><a href="#sec-2-5">2.5 unordered-matches</a></li>
+<li><a href="#sec-2-6">2.6 Combine to create score</a></li>
+<li><a href="#sec-2-7">2.7 But WHERE ARE THE TESTS, you ask..</a></li>
+<li><a href="#sec-2-8">2.8 math.combinatorics</a></li>
+<li><a href="#sec-2-9">2.9 Generate all possible pairs of pairs</a></li>
+<li><a href="#sec-2-10">2.10 And turn it into a function</a></li>
+<li><a href="#sec-2-11">2.11 Define the domain</a></li>
+<li><a href="#sec-2-12">2.12 Take it for a ride</a></li>
+<li><a href="#sec-2-13">2.13 Print out the entire domain</a></li>
+<li><a href="#sec-2-14">2.14 You want me to do what?</a></li>
+<li><a href="#sec-2-15">2.15 Experiment with test.generative</a></li>
+<li><a href="#sec-2-16">2.16 Introduce randomness</a></li>
+<li><a href="#sec-2-17">2.17 Define the system constraints/contracts</a></li>
+<li><a href="#sec-2-18">2.18 Try out our contracts with sample data</a></li>
+<li><a href="#sec-2-19">2.19 Create a test.generative test</a></li>
+<li><a href="#sec-2-20">2.20 Run the test</a></li>
+<li><a href="#sec-2-21">2.21 What happens when a test fails?</a></li>
+<li><a href="#sec-2-22">2.22 Paste :form in to the REPL to examine your problem</a></li>
+<li><a href="#sec-2-23">2.23 Practical cases</a></li>
+<li><a href="#sec-2-24">2.24 Another</a></li>
+<li><a href="#sec-2-25">2.25 And of course</a></li>
+<li><a href="#sec-2-26">2.26 References</a></li>
+<li><a href="#sec-2-27">2.27 Questions?</a></li>
 </ul>
 </li>
 </ul>
@@ -74,12 +73,20 @@
 <h2 id="sec-1"><span class="section-number-2">1</span> The Generative Generation &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-1">
 
+</div>
 
 </div>
 
-<div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Start with the shell of a scoring function &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-1">
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Mastermind &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<div class="outline-text-2" id="text-2">
+
+
+</div>
+
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Let's begin &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-1">
 
 
 
@@ -95,9 +102,9 @@
 
 </div>
 
-<div id="outline-container-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Experiment with comparing data &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-2">
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Experiment by comparing data with diff &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-2">
 
 
 
@@ -116,9 +123,9 @@ user=&gt; [[nil :g :g] [nil :y :y] [:r nil nil :b]]
 
 </div>
 
-<div id="outline-container-1-3" class="outline-3">
-<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Write exact-matches &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-3">
+<div id="outline-container-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> exact-matches &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-3">
 
 
 
@@ -144,9 +151,9 @@ user=&gt; 2
 
 </div>
 
-<div id="outline-container-1-4" class="outline-3">
-<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Let's look at frequencies &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-4">
+<div id="outline-container-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Frequencies &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-4">
 
 
 
@@ -155,7 +162,7 @@ user=&gt; 2
 (<span style="color: #7f007f;">def</span> <span style="color: #0000ff;">example-guess</span> [<span style="color: #008b8b;">:y</span> <span style="color: #008b8b;">:y</span> <span style="color: #008b8b;">:y</span> <span style="color: #008b8b;">:g</span>])
 
 (frequencies example-guess)
-(frequencies example-secret)  
+(frequencies example-secret)
 </pre>
 
 
@@ -165,23 +172,11 @@ user=&gt; {:r 1, :g 2, :b 1}
 </pre>
 
 
-</div>
-
-</div>
-
-<div id="outline-container-1-5" class="outline-3">
-<h3 id="sec-1-5"><span class="section-number-3">1.5</span> Merging the results &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-5">
 
 
 
-
-<pre class="src src-clojure">(<span style="color: #a0522d;">select-keys</span> (frequencies example-secret)
-             example-guess)
-
-(<span style="color: #a0522d;">select-keys</span> (frequencies example-guess)
-             example-secret)
-
+<pre class="src src-clojure">(<span style="color: #a0522d;">select-keys</span> (frequencies example-secret) example-guess)
+(<span style="color: #a0522d;">select-keys</span> (frequencies example-guess) example-secret)
 (<span style="color: #a0522d;">merge-with</span> min {<span style="color: #008b8b;">:g</span> 1} {<span style="color: #008b8b;">:g</span> 2})
 </pre>
 
@@ -197,20 +192,20 @@ user=&gt; {:g 1}
 
 </div>
 
-<div id="outline-container-1-6" class="outline-3">
-<h3 id="sec-1-6"><span class="section-number-3">1.6</span> Write unordered-matches &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-6">
+<div id="outline-container-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> unordered-matches &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-5">
 
 
 
 
 <pre class="src src-clojure">(<span style="color: #7f007f;">defn</span> <span style="color: #0000ff;">unordered-matches</span>
-  <span style="color: #8b2252;">"Given two collections, return a map where each </span>
+  <span style="color: #8b2252;">"Given two collections, return a map where each</span>
 <span style="color: #8b2252;">   key is an item in both collections, and each</span>
 <span style="color: #8b2252;">   value is the minumum number of occurrences"</span>
   [c1 c2]
   (<span style="color: #483d8b;">let</span> [f1 (<span style="color: #a0522d;">select-keys</span> (frequencies c1) c2)
-        f2 (<span style="color: #a0522d;">select-keys</span> (frequencies c2) c1)] 
+        f2 (<span style="color: #a0522d;">select-keys</span> (frequencies c2) c1)]
     (<span style="color: #a0522d;">merge-with</span> min f1 f2)))
 
 (unordered-matches [<span style="color: #008b8b;">:r</span> <span style="color: #008b8b;">:g</span> <span style="color: #008b8b;">:g</span> <span style="color: #008b8b;">:b</span>] [<span style="color: #008b8b;">:y</span> <span style="color: #008b8b;">:y</span> <span style="color: #008b8b;">:y</span> <span style="color: #008b8b;">:g</span>])
@@ -226,9 +221,9 @@ user=&gt; {:g 1}
 
 </div>
 
-<div id="outline-container-1-7" class="outline-3">
-<h3 id="sec-1-7"><span class="section-number-3">1.7</span> Finally, combine and create the score function &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-7">
+<div id="outline-container-2-6" class="outline-3">
+<h3 id="sec-2-6"><span class="section-number-3">2.6</span> Combine to create score &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-6">
 
 
 
@@ -253,17 +248,18 @@ user=&gt; {:exact 1, :unordered 1}
 
 </div>
 
-<div id="outline-container-1-8" class="outline-3">
-<h3 id="sec-1-8"><span class="section-number-3">1.8</span> But WHERE ARE THE TESTS, you ask.. &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-8">
+<div id="outline-container-2-7" class="outline-3">
+<h3 id="sec-2-7"><span class="section-number-3">2.7</span> But WHERE ARE THE TESTS, you ask.. &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-7">
+
+<p>   <img src="meme.jpg"  alt="meme.jpg" />
+</p></div>
 
 </div>
 
-</div>
-
-<div id="outline-container-1-9" class="outline-3">
-<h3 id="sec-1-9"><span class="section-number-3">1.9</span> math.combinatorics &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-9">
+<div id="outline-container-2-8" class="outline-3">
+<h3 id="sec-2-8"><span class="section-number-3">2.8</span> math.combinatorics &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-8">
 
 
 
@@ -274,7 +270,7 @@ user=&gt; {:exact 1, :unordered 1}
 
 
 <pre class="example">
-user=&gt; ((:r :r) (:r :g) (:r :b) (:g :r) 
+user=&gt; ((:r :r) (:r :g) (:r :b) (:g :r)
         (:g :g) (:g :b) (:b :r) (:b :g) (:b :b))
 </pre>
 
@@ -283,9 +279,9 @@ user=&gt; ((:r :r) (:r :g) (:r :b) (:g :r)
 
 </div>
 
-<div id="outline-container-1-10" class="outline-3">
-<h3 id="sec-1-10"><span class="section-number-3">1.10</span> We can look at all the possible combinations &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-10">
+<div id="outline-container-2-9" class="outline-3">
+<h3 id="sec-2-9"><span class="section-number-3">2.9</span> Generate all possible pairs of pairs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-9">
 
 
 
@@ -296,9 +292,9 @@ user=&gt; ((:r :r) (:r :g) (:r :b) (:g :r)
 
 
 <pre class="example">
-user=&gt; (((:r :r) (:r :r)) ((:r :r) (:r :g)) 
-        ((:r :r) (:r :b)) ((:r :r) (:g :r)) 
-        ((:r :r) (:g :g)) ((:r :r) (:g :b)) 
+user=&gt; (((:r :r) (:r :r)) ((:r :r) (:r :g))
+        ((:r :r) (:r :b)) ((:r :r) (:g :r))
+        ((:r :r) (:g :g)) ((:r :r) (:g :b))
         ...
         ((:b :b) (:b :g)) ((:b :b) (:b :b)))
 </pre>
@@ -309,9 +305,9 @@ user=&gt; (((:r :r) (:r :r)) ((:r :r) (:r :g))
 
 </div>
 
-<div id="outline-container-1-11" class="outline-3">
-<h3 id="sec-1-11"><span class="section-number-3">1.11</span> And turn it into a function &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-11">
+<div id="outline-container-2-10" class="outline-3">
+<h3 id="sec-2-10"><span class="section-number-3">2.10</span> And turn it into a function &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-10">
 
 
 
@@ -328,9 +324,9 @@ user=&gt; (((:r :r) (:r :r)) ((:r :r) (:r :g))
 
 </div>
 
-<div id="outline-container-1-12" class="outline-3">
-<h3 id="sec-1-12"><span class="section-number-3">1.12</span> Writing a real test &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-12">
+<div id="outline-container-2-11" class="outline-3">
+<h3 id="sec-2-11"><span class="section-number-3">2.11</span> Define the domain &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-11">
 
 
 
@@ -352,9 +348,9 @@ user=&gt; (((:r :r) (:r :r)) ((:r :r) (:r :g))
 
 </div>
 
-<div id="outline-container-1-13" class="outline-3">
-<h3 id="sec-1-13"><span class="section-number-3">1.13</span> Giving it a spin &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-13">
+<div id="outline-container-2-12" class="outline-3">
+<h3 id="sec-2-12"><span class="section-number-3">2.12</span> Take it for a ride &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-12">
 
 
 
@@ -365,12 +361,12 @@ user=&gt; (((:r :r) (:r :r)) ((:r :r) (:r :g))
 
 
 <pre class="example">
-user=&gt; ({:secret (:r :r), :guess (:r :r), 
-         :score {:exact 2, :unordered 0}} 
-        {:secret (:r :r), :guess (:r :g), 
+user=&gt; ({:secret (:r :r), :guess (:r :r),
+         :score {:exact 2, :unordered 0}}
+        {:secret (:r :r), :guess (:r :g),
          :score {:exact 1, :unordered 0}}
         ....
-        {:secret (:b :b), :guess (:b :b), 
+        {:secret (:b :b), :guess (:b :b),
          :score {:exact 2, :unordered 0}})
 </pre>
 
@@ -379,9 +375,9 @@ user=&gt; ({:secret (:r :r), :guess (:r :r),
 
 </div>
 
-<div id="outline-container-1-14" class="outline-3">
-<h3 id="sec-1-14"><span class="section-number-3">1.14</span> Manually examine the data &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-14">
+<div id="outline-container-2-13" class="outline-3">
+<h3 id="sec-2-13"><span class="section-number-3">2.13</span> Print out the entire domain &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-13">
 
 
 
@@ -399,24 +395,24 @@ user=&gt; ({:secret (:r :r), :guess (:r :r),
 
 </div>
 
-<div id="outline-container-1-15" class="outline-3">
-<h3 id="sec-1-15"><span class="section-number-3">1.15</span> You want me to do what? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-15">
+<div id="outline-container-2-14" class="outline-3">
+<h3 id="sec-2-14"><span class="section-number-3">2.14</span> You want me to do what? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-14">
 
 
 
 <pre class="example">
-========================================================
-:secret       | :guess        | :score                  
-========================================================
-(:r :r :r :r) | (:r :r :r :r) | {:exact 4, :unordered 0}
-(:r :r :r :r) | (:r :r :r :g) | {:exact 3, :unordered 0}
-(:r :r :r :r) | (:r :r :r :b) | {:exact 3, :unordered 0}
-(:r :r :r :r) | (:r :r :r :y) | {:exact 3, :unordered 0}
-....
-(:y :y :y :y) | (:y :y :y :b) | {:exact 3, :unordered 0}
-(:y :y :y :y) | (:y :y :y :y) | {:exact 4, :unordered 0}
-========================================================
+    ========================================================
+    :secret       | :guess        | :score
+    ========================================================
+    (:r :r :r :r) | (:r :r :r :r) | {:exact 4, :unordered 0}
+    (:r :r :r :r) | (:r :r :r :g) | {:exact 3, :unordered 0}
+    (:r :r :r :r) | (:r :r :r :b) | {:exact 3, :unordered 0}
+    (:r :r :r :r) | (:r :r :r :y) | {:exact 3, :unordered 0}
+    ....
+    (:y :y :y :y) | (:y :y :y :b) | {:exact 3, :unordered 0}
+    (:y :y :y :y) | (:y :y :y :y) | {:exact 4, :unordered 0}
+    ========================================================
 </pre>
 
 
@@ -425,9 +421,9 @@ user=&gt; ({:secret (:r :r), :guess (:r :r),
 
 </div>
 
-<div id="outline-container-1-16" class="outline-3">
-<h3 id="sec-1-16"><span class="section-number-3">1.16</span> Experimenting with test.generative &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-16">
+<div id="outline-container-2-15" class="outline-3">
+<h3 id="sec-2-15"><span class="section-number-3">2.15</span> Experiment with test.generative &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-15">
 
 
 
@@ -439,9 +435,9 @@ user=&gt; ({:secret (:r :r), :guess (:r :r),
 
 
 <pre class="example">
-user=&gt; [false true false false true true false false 
+user=&gt; [false true false false true true false false
         true true false false true false true false false]
-user=&gt; {-65 -1280904780, 96 193928749, 4 835628727, 
+user=&gt; {-65 -1280904780, 96 193928749, 4 835628727,
         -69 1265123962, 38 740672507, 42 -872871511}
 </pre>
 
@@ -467,9 +463,9 @@ user=&gt; (-1880284059 -442888494 -98097322 1681870739)
 
 </div>
 
-<div id="outline-container-1-17" class="outline-3">
-<h3 id="sec-1-17"><span class="section-number-3">1.17</span> Create a random secret function &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-17">
+<div id="outline-container-2-16" class="outline-3">
+<h3 id="sec-2-16"><span class="section-number-3">2.16</span> Introduce randomness &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-16">
 
 
 
@@ -490,9 +486,9 @@ user=&gt; [:b :y :b :r]
 
 </div>
 
-<div id="outline-container-1-18" class="outline-3">
-<h3 id="sec-1-18"><span class="section-number-3">1.18</span> Define a set of functions used to test the scorer &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-18">
+<div id="outline-container-2-17" class="outline-3">
+<h3 id="sec-2-17"><span class="section-number-3">2.17</span> Define the system constraints/contracts &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-17">
 
 
 
@@ -505,23 +501,11 @@ user=&gt; [:b :y :b :r]
   [secret guess sc]
   (<span style="color: #a0522d;">=</span> sc (score guess secret)))
 
-(<span style="color: #7f007f;">defn</span> <span style="color: #0000ff;">scoring-is-bounded-by-number-of-pegs</span> 
+(<span style="color: #7f007f;">defn</span> <span style="color: #0000ff;">scoring-is-bounded-by-number-of-pegs</span>
   [secret guess score]
   (<span style="color: #a0522d;">&lt;=</span> 0 (matches score) (<span style="color: #a0522d;">count</span> secret)))
-</pre>
 
-</div>
-
-</div>
-
-<div id="outline-container-1-19" class="outline-3">
-<h3 id="sec-1-19"><span class="section-number-3">1.19</span> Test functions continued &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-19">
-
-
-
-
-<pre class="src src-clojure">(<span style="color: #7f007f;">defn</span> <span style="color: #0000ff;">reordering-the-guess-does-not-change-matches</span>
+(<span style="color: #7f007f;">defn</span> <span style="color: #0000ff;">reordering-the-guess-does-not-change-matches</span>
   [secret guess sc]
   (<span style="color: #a0522d;">=</span> #{(matches sc)}
      (<span style="color: #a0522d;">into</span> #{}
@@ -534,9 +518,9 @@ user=&gt; [:b :y :b :r]
 
 </div>
 
-<div id="outline-container-1-20" class="outline-3">
-<h3 id="sec-1-20"><span class="section-number-3">1.20</span> Define some test data and run the new functions &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-20">
+<div id="outline-container-2-18" class="outline-3">
+<h3 id="sec-2-18"><span class="section-number-3">2.18</span> Try out our contracts with sample data &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-18">
 
 
 
@@ -565,31 +549,31 @@ user=&gt; true
 
 </div>
 
-<div id="outline-container-1-21" class="outline-3">
-<h3 id="sec-1-21"><span class="section-number-3">1.21</span> Create a full test.generative test &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-21">
+<div id="outline-container-2-19" class="outline-3">
+<h3 id="sec-2-19"><span class="section-number-3">2.19</span> Create a test.generative test &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-19">
 
 
 
 
 <pre class="src src-clojure">(<span style="color: #a0522d;">use</span> '[clojure.test.generative <span style="color: #008b8b;">:only</span> (defspec) <span style="color: #008b8b;">:as</span> test])
+
 (defspec score-invariants
   score
   [^{<span style="color: #008b8b;">:tag</span> `random-secret} secret
    ^{<span style="color: #008b8b;">:tag</span> `random-secret} guess]
   (<span style="color: #a0522d;">assert</span> (scoring-is-symmetric secret guess %))
   (<span style="color: #a0522d;">assert</span> (scoring-is-bounded-by-number-of-pegs secret guess %))
-  (<span style="color: #a0522d;">assert</span> (reordering-the-guess-does-not-change-matches
-           secret guess %)))
+  (<span style="color: #a0522d;">assert</span> (reordering-the-guess-does-not-change-matches secret guess %)))
 </pre>
 
 </div>
 
 </div>
 
-<div id="outline-container-1-22" class="outline-3">
-<h3 id="sec-1-22"><span class="section-number-3">1.22</span> run test &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-22">
+<div id="outline-container-2-20" class="outline-3">
+<h3 id="sec-2-20"><span class="section-number-3">2.20</span> Run the test &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-20">
 
 
 
@@ -599,21 +583,21 @@ user=&gt; true
 
 
 <pre class="example">
-user=&gt; {:iterations 1747, :msec 10004, 
+user=&gt; {:iterations 1747, :msec 10004,
         :var #'user/score-invariants, :seed 42}
-       {:iterations 1748, :msec 10002, 
+       {:iterations 1748, :msec 10002,
         :var #'user/score-invariants, :seed 46}
-       {:iterations 1733, :msec 10002, 
+       {:iterations 1733, :msec 10002,
         :var #'user/score-invariants, :seed 43}
-       {:iterations 1745, :msec 10001, 
+       {:iterations 1745, :msec 10001,
         :var #'user/score-invariants, :seed 49}
-       {:iterations 1734, :msec 10004, 
+       {:iterations 1734, :msec 10004,
         :var #'user/score-invariants, :seed 45}
-       {:iterations 1762, :msec 10009, 
+       {:iterations 1762, :msec 10009,
         :var #'user/score-invariants, :seed 44}
-       {:iterations 1743, :msec 10008, 
+       {:iterations 1743, :msec 10008,
         :var #'user/score-invariants, :seed 47}
-       {:iterations 1749, :msec 10009, 
+       {:iterations 1749, :msec 10009,
         :var #'user/score-invariants, :seed 48}
        :run-complete
 </pre>
@@ -623,9 +607,9 @@ user=&gt; {:iterations 1747, :msec 10004,
 
 </div>
 
-<div id="outline-container-1-23" class="outline-3">
-<h3 id="sec-1-23"><span class="section-number-3">1.23</span> What happens when a test fails? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-23">
+<div id="outline-container-2-21" class="outline-3">
+<h3 id="sec-2-21"><span class="section-number-3">2.21</span> What happens when a test fails? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-21">
 
 
 
@@ -639,13 +623,13 @@ user=&gt; {:iterations 1747, :msec 10004,
 
 
 <pre class="example">
-user=&gt; {:form (#'user/score-invariants [:g :g :g :r] 
-                                       [:r :r :r :y]), 
- :iteration 0, :seed 44, 
- :error "Assert failed: (scoring-is-bounded-by-number-of-pegs 
-                          secret guess %)", 
- :exception #&lt;AssertionError java.lang.AssertionError: 
-   Assert failed: (scoring-is-bounded-by-number-of-pegs 
+user=&gt; {:form (#'user/score-invariants [:g :g :g :r]
+                                       [:r :r :r :y]),
+ :iteration 0, :seed 44,
+ :error "Assert failed: (scoring-is-bounded-by-number-of-pegs
+                          secret guess %)",
+ :exception #&lt;AssertionError java.lang.AssertionError:
+   Assert failed: (scoring-is-bounded-by-number-of-pegs
                     secret guess %)&gt;}
 </pre>
 
@@ -654,9 +638,9 @@ user=&gt; {:form (#'user/score-invariants [:g :g :g :r]
 
 </div>
 
-<div id="outline-container-1-24" class="outline-3">
-<h3 id="sec-1-24"><span class="section-number-3">1.24</span> You can paste the form in to find your problem &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-24">
+<div id="outline-container-2-22" class="outline-3">
+<h3 id="sec-2-22"><span class="section-number-3">2.22</span> Paste :form in to the REPL to examine your problem &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-22">
 
 
 
@@ -666,9 +650,9 @@ user=&gt; {:form (#'user/score-invariants [:g :g :g :r]
 
 
 <pre class="example">
-user =&gt; AssertionError Assert failed: 
-  (scoring-is-bounded-by-number-of-pegs 
-    secret guess %)  
+user =&gt; AssertionError Assert failed:
+  (scoring-is-bounded-by-number-of-pegs
+    secret guess %)
   user/score-invariants (NO_SOURCE_FILE:145)
 </pre>
 
@@ -676,9 +660,9 @@ user =&gt; AssertionError Assert failed:
 
 </div>
 
-<div id="outline-container-1-25" class="outline-3">
-<h3 id="sec-1-25"><span class="section-number-3">1.25</span> Practical cases &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-25">
+<div id="outline-container-2-23" class="outline-3">
+<h3 id="sec-2-23"><span class="section-number-3">2.23</span> Practical cases &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-23">
 
 
 
@@ -703,9 +687,9 @@ user =&gt; AssertionError Assert failed:
 
 </div>
 
-<div id="outline-container-1-26" class="outline-3">
-<h3 id="sec-1-26"><span class="section-number-3">1.26</span> Another &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-26">
+<div id="outline-container-2-24" class="outline-3">
+<h3 id="sec-2-24"><span class="section-number-3">2.24</span> Another &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-24">
 
 
 
@@ -734,9 +718,9 @@ user =&gt; AssertionError Assert failed:
 
 </div>
 
-<div id="outline-container-1-27" class="outline-3">
-<h3 id="sec-1-27"><span class="section-number-3">1.27</span> And of course &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-27">
+<div id="outline-container-2-25" class="outline-3">
+<h3 id="sec-2-25"><span class="section-number-3">2.25</span> And of course &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-25">
 
 
 
@@ -759,12 +743,14 @@ user =&gt; AssertionError Assert failed:
 
 </div>
 
-<div id="outline-container-1-28" class="outline-3">
-<h3 id="sec-1-28"><span class="section-number-3">1.28</span> References &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-28">
+<div id="outline-container-2-26" class="outline-3">
+<h3 id="sec-2-26"><span class="section-number-3">2.26</span> References &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-26">
 
 <ul>
 <li>This talk <a href="http://github.com/abedra/the-generative-generation">github.com/abedra/the-generative-generation</a>
+</li>
+<li>Mastermind <a href="http://en.wikipedia.org/wiki/Mastermind_(board_game)">en.wikipedia.org/wiki/Mastermind_(board_game)</a>
 </li>
 <li>Test Generative <a href="http://github.com/clojure/test.generative">github.com/clojure/test.generative</a>
 </li>
@@ -784,9 +770,9 @@ user =&gt; AssertionError Assert failed:
 
 </div>
 
-<div id="outline-container-1-29" class="outline-3">
-<h3 id="sec-1-29"><span class="section-number-3">1.29</span> Questions? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-1-29">
+<div id="outline-container-2-27" class="outline-3">
+<h3 id="sec-2-27"><span class="section-number-3">2.27</span> Questions? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-2-27">
 
 
 
@@ -800,7 +786,7 @@ user =&gt; AssertionError Assert failed:
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-03-16 09:47:39 PDT</p>
+<p class="date">Date: 2012-03-16 13:09:35 PDT</p>
 <p class="author">Author: Aaron Bedra</p>
 <p class="creator">Org version 7.8.03 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -4,7 +4,8 @@
 #+LANGUAGE:  en
 
 * The Generative Generation 					      :slide:
-** Start with the shell of a scoring function			      :slide:
+* Mastermind							      :slide:
+** Let's begin 							      :slide:
 #+begin_src clojure
   (defn exact-matches
     "Given two collections, return the number of
@@ -12,7 +13,7 @@
      items."
     [c1 c2])
 #+end_src
-** Experiment with comparing data				      :slide:
+** Experiment by comparing data with diff 			      :slide:
 #+begin_src clojure :exports both
   (require '[clojure.data :as data])
   (data/diff [:r :g :g :b] [:r :y :y :b])
@@ -21,7 +22,7 @@
 #+RESULTS:
 : user=> [[nil :g :g] [nil :y :y] [:r nil nil :b]]
 
-** Write exact-matches						      :slide:
+** exact-matches 						      :slide:
 #+begin_src clojure :exports both
   (defn exact-matches
     "Given two collections, return the number of
@@ -30,34 +31,29 @@
     [c1 c2]
     (let [[_ _ matches] (data/diff c1 c2)]
       (count (remove nil? matches))))
-  
+
   (exact-matches [:r :g :g :b] [:r :y :y :b])
 #+end_src
 
 #+RESULTS:
 : user=> 2
 
-** Let's look at frequencies 					      :slide:
+** Frequencies 							      :slide:
 #+begin_src clojure :exports both
   (def example-secret [:r :g :g :b])
   (def example-guess [:y :y :y :g])
 
   (frequencies example-guess)
-  (frequencies example-secret)  
+  (frequencies example-secret)
 #+end_src
 
 #+RESULTS:
 : user=> {:y 3, :g 1}
 : user=> {:r 1, :g 2, :b 1}
 
-** Merging the results 						      :slide:
 #+begin_src clojure :exports both
-  (select-keys (frequencies example-secret)
-               example-guess)
-  
-  (select-keys (frequencies example-guess)
-               example-secret)
-  
+  (select-keys (frequencies example-secret) example-guess)
+  (select-keys (frequencies example-guess) example-secret)
   (merge-with min {:g 1} {:g 2})
 #+end_src
 
@@ -66,24 +62,24 @@
 : user=> {:g 1}
 : user=> {:g 1}
 
-** Write unordered-matches					      :slide:
+** unordered-matches 						      :slide:
 #+begin_src clojure :exports both
   (defn unordered-matches
-    "Given two collections, return a map where each 
+    "Given two collections, return a map where each
      key is an item in both collections, and each
      value is the minumum number of occurrences"
     [c1 c2]
     (let [f1 (select-keys (frequencies c1) c2)
-          f2 (select-keys (frequencies c2) c1)] 
+          f2 (select-keys (frequencies c2) c1)]
       (merge-with min f1 f2)))
-  
+
   (unordered-matches [:r :g :g :b] [:y :y :y :g])
 #+end_src
 
 #+RESULTS:
 : user=> {:g 1}
 
-** Finally, combine and create the score function		      :slide:
+** Combine to create score 					      :slide:
 #+begin_src clojure :exports both
   (defn score [c1 c2]
     (let [exact (exact-matches c1 c2)
@@ -91,7 +87,7 @@
                       (vals
                         (unordered-matches c1 c2)))]
       {:exact exact :unordered (- unordered exact)}))
-  
+
   (score [:r :g :g :b] [:r :y :y :g])
 #+end_src
 
@@ -99,6 +95,7 @@
 : user=> {:exact 1, :unordered 1}
 
 ** But WHERE ARE THE TESTS, you ask..				      :slide:
+   [[file:meme.jpg]]
 ** math.combinatorics 						      :slide:
 #+begin_src clojure :exports both
   (require '[clojure.math.combinatorics :as comb])
@@ -106,19 +103,19 @@
 #+end_src
 
 #+RESULTS:
-: user=> ((:r :r) (:r :g) (:r :b) (:g :r) 
+: user=> ((:r :r) (:r :g) (:r :b) (:g :r)
 :         (:g :g) (:g :b) (:b :r) (:b :g) (:b :b))
 
-** We can look at all the possible combinations 		      :slide:
+** Generate all possible pairs of pairs 			      :slide:
 #+begin_src clojure :exports both
   (-> (comb/selections [:r :g :b] 2)
       (comb/selections 2))
 #+end_src
 
 #+RESULTS:
-: user=> (((:r :r) (:r :r)) ((:r :r) (:r :g)) 
-:         ((:r :r) (:r :b)) ((:r :r) (:g :r)) 
-:         ((:r :r) (:g :g)) ((:r :r) (:g :b)) 
+: user=> (((:r :r) (:r :r)) ((:r :r) (:r :g))
+:         ((:r :r) (:r :b)) ((:r :r) (:g :r))
+:         ((:r :r) (:g :g)) ((:r :r) (:g :b))
 :         ...
 :         ((:b :b) (:b :g)) ((:b :b) (:b :b)))
 
@@ -132,7 +129,7 @@
     (-> (comb/selections colors n)
         (comb/selections 2)))
 #+end_src
-** Writing a real test 						      :slide:
+** Define the domain 						      :slide:
 #+begin_src clojure
   (defn score-inputs
     "Given a sequence of turn inputs, return a lazy
@@ -146,22 +143,22 @@
         :score (score secret guess)})
      inputs))
 #+end_src
-** Giving it a spin						      :slide:
+** Take it for a ride 						      :slide:
 #+begin_src clojure :exports both
   (->> (generate-turn-inputs [:r :g :b] 2)
        (score-inputs))
 #+end_src
 
 #+RESULTS:
-: user=> ({:secret (:r :r), :guess (:r :r), 
-:          :score {:exact 2, :unordered 0}} 
-:         {:secret (:r :r), :guess (:r :g), 
+: user=> ({:secret (:r :r), :guess (:r :r),
+:          :score {:exact 2, :unordered 0}}
+:         {:secret (:r :r), :guess (:r :g),
 :          :score {:exact 1, :unordered 0}}
 :         ....
-:         {:secret (:b :b), :guess (:b :b), 
+:         {:secret (:b :b), :guess (:b :b),
 :          :score {:exact 2, :unordered 0}})
 
-** Manually examine the data 					      :slide:
+** Print out the entire domain 					      :slide:
 #+begin_src clojure
   (use 'clojure.pprint)
   (require '[clojure.java.io :as io])
@@ -176,20 +173,20 @@
 #+end_src
 
 #+RESULTS:
-: ========================================================
-: :secret       | :guess        | :score                  
-: ========================================================
-: (:r :r :r :r) | (:r :r :r :r) | {:exact 4, :unordered 0}
-: (:r :r :r :r) | (:r :r :r :g) | {:exact 3, :unordered 0}
-: (:r :r :r :r) | (:r :r :r :b) | {:exact 3, :unordered 0}
-: (:r :r :r :r) | (:r :r :r :y) | {:exact 3, :unordered 0}
-: ....
-: (:y :y :y :y) | (:y :y :y :b) | {:exact 3, :unordered 0}
-: (:y :y :y :y) | (:y :y :y :y) | {:exact 4, :unordered 0}
-: ========================================================
+:     ========================================================
+:     :secret       | :guess        | :score
+:     ========================================================
+:     (:r :r :r :r) | (:r :r :r :r) | {:exact 4, :unordered 0}
+:     (:r :r :r :r) | (:r :r :r :g) | {:exact 3, :unordered 0}
+:     (:r :r :r :r) | (:r :r :r :b) | {:exact 3, :unordered 0}
+:     (:r :r :r :r) | (:r :r :r :y) | {:exact 3, :unordered 0}
+:     ....
+:     (:y :y :y :y) | (:y :y :y :b) | {:exact 3, :unordered 0}
+:     (:y :y :y :y) | (:y :y :y :y) | {:exact 4, :unordered 0}
+:     ========================================================
 
 
-** Experimenting with test.generative				      :slide:
+** Experiment with test.generative 				      :slide:
 #+begin_src clojure :exports both
   (require '[clojure.test.generative.generators :as gen])
   (gen/vec gen/boolean)
@@ -197,9 +194,9 @@
 #+end_src
 
 #+RESULTS:
-: user=> [false true false false true true false false 
+: user=> [false true false false true true false false
 :         true true false false true false true false false]
-: user=> {-65 -1280904780, 96 193928749, 4 835628727, 
+: user=> {-65 -1280904780, 96 193928749, 4 835628727,
 :         -69 1265123962, 38 740672507, 42 -872871511}
 
 #+begin_src clojure :exports both
@@ -214,33 +211,31 @@
 : user=> (-1880284059 -442888494 -98097322 1681870739)
 
 
-** Create a random secret function				      :slide:
+** Introduce randomness 					      :slide:
 #+begin_src clojure :exports both
   (defn random-secret []
     (gen/vec #(gen/one-of :r :g :b :y) 4))
-  
+
   (random-secret)
 #+end_src
 
 #+RESULTS:
 : user=> [:b :y :b :r]
 
-** Define a set of functions used to test the scorer		      :slide:
+** Define the system constraints/contracts 			      :slide:
 #+begin_src clojure
   (defn matches
     [score]
     (+ (:exact score) (:unordered score)))
-  
+
   (defn scoring-is-symmetric
     [secret guess sc]
     (= sc (score guess secret)))
-  
-  (defn scoring-is-bounded-by-number-of-pegs 
+
+  (defn scoring-is-bounded-by-number-of-pegs
     [secret guess score]
     (<= 0 (matches score) (count secret)))
-#+end_src
-** Test functions continued 					      :slide:
-#+begin_src clojure
+
   (defn reordering-the-guess-does-not-change-matches
     [secret guess sc]
     (= #{(matches sc)}
@@ -249,16 +244,16 @@
               #(matches (score secret %))
               (comb/permutations guess)))))
 #+end_src
-** Define some test data and run the new functions		      :slide:
+** Try out our contracts with sample data 			      :slide:
 #+begin_src clojure :exports both
   (def secret [:r :g :g :b])
   (def guess [:r :b :b :y])
-  
+
   (scoring-is-symmetric secret guess (score secret guess))
-  
+
   (scoring-is-bounded-by-number-of-pegs
    secret guess (score secret guess))
-  
+
   (reordering-the-guess-does-not-change-matches
     secret guess (score secret guess))
 #+end_src
@@ -268,39 +263,39 @@
 : user=> true
 : user=> true
 
-** Create a full test.generative test				      :slide:
+** Create a test.generative test 				      :slide:
 #+begin_src clojure
   (use '[clojure.test.generative :only (defspec) :as test])
+
   (defspec score-invariants
     score
     [^{:tag `random-secret} secret
      ^{:tag `random-secret} guess]
     (assert (scoring-is-symmetric secret guess %))
     (assert (scoring-is-bounded-by-number-of-pegs secret guess %))
-    (assert (reordering-the-guess-does-not-change-matches
-             secret guess %)))
+    (assert (reordering-the-guess-does-not-change-matches secret guess %)))
 #+end_src
-** run test							      :slide:
+** Run the test 						      :slide:
 #+begin_src clojure :exports both
    (test/test-vars #'user/score-invariants)
 #+end_src
 
 #+RESULTS:
-: user=> {:iterations 1747, :msec 10004, 
+: user=> {:iterations 1747, :msec 10004,
 :         :var #'user/score-invariants, :seed 42}
-:        {:iterations 1748, :msec 10002, 
+:        {:iterations 1748, :msec 10002,
 :         :var #'user/score-invariants, :seed 46}
-:        {:iterations 1733, :msec 10002, 
+:        {:iterations 1733, :msec 10002,
 :         :var #'user/score-invariants, :seed 43}
-:        {:iterations 1745, :msec 10001, 
+:        {:iterations 1745, :msec 10001,
 :         :var #'user/score-invariants, :seed 49}
-:        {:iterations 1734, :msec 10004, 
+:        {:iterations 1734, :msec 10004,
 :         :var #'user/score-invariants, :seed 45}
-:        {:iterations 1762, :msec 10009, 
+:        {:iterations 1762, :msec 10009,
 :         :var #'user/score-invariants, :seed 44}
-:        {:iterations 1743, :msec 10008, 
+:        {:iterations 1743, :msec 10008,
 :         :var #'user/score-invariants, :seed 47}
-:        {:iterations 1749, :msec 10009, 
+:        {:iterations 1749, :msec 10009,
 :         :var #'user/score-invariants, :seed 48}
 :        :run-complete
 
@@ -309,29 +304,29 @@
   (defn scoring-is-bounded-by-number-of-pegs
     [secret guess score]
     (>= 0 (matches score) (count secret)))
-  
+
   (test/test-vars #'user/score-invariants)
 #+end_src
 
 #+RESULTS:
-: user=> {:form (#'user/score-invariants [:g :g :g :r] 
-:                                        [:r :r :r :y]), 
-:  :iteration 0, :seed 44, 
-:  :error "Assert failed: (scoring-is-bounded-by-number-of-pegs 
-:                           secret guess %)", 
-:  :exception #<AssertionError java.lang.AssertionError: 
-:    Assert failed: (scoring-is-bounded-by-number-of-pegs 
+: user=> {:form (#'user/score-invariants [:g :g :g :r]
+:                                        [:r :r :r :y]),
+:  :iteration 0, :seed 44,
+:  :error "Assert failed: (scoring-is-bounded-by-number-of-pegs
+:                           secret guess %)",
+:  :exception #<AssertionError java.lang.AssertionError:
+:    Assert failed: (scoring-is-bounded-by-number-of-pegs
 :                     secret guess %)>}
 
-** You can paste the form in to find your problem		      :slide:
+** Paste :form in to the REPL to examine your problem 		      :slide:
 #+begin_src clojure :exports both
   (#'user/score-invariants [:g :y :b :r] [:r :r :y :y])
 #+end_src
 
 #+RESULTS:
-: user => AssertionError Assert failed: 
-:   (scoring-is-bounded-by-number-of-pegs 
-:     secret guess %)  
+: user => AssertionError Assert failed:
+:   (scoring-is-bounded-by-number-of-pegs
+:     secret guess %)
 :   user/score-invariants (NO_SOURCE_FILE:145)
 ** Practical cases						      :slide:
 #+begin_src clojure
@@ -388,6 +383,7 @@
 #+end_src
 ** References							      :slide:
    - This talk [[http://github.com/abedra/the-generative-generation][github.com/abedra/the-generative-generation]]
+   - Mastermind [[http://en.wikipedia.org/wiki/Mastermind_(board_game)][en.wikipedia.org/wiki/Mastermind_(board_game)]]
    - Test Generative [[http://github.com/clojure/test.generative][github.com/clojure/test.generative]]
    - Programming Clojure, 2nd Edition [[http://pragprog.com/book/shcloj2/programming-clojure][pragprog.com/book/shcloj2/programming-clojure]]
    - Haskell's Quick Check [[http://www.haskell.org/haskellwiki/Introduction_to_QuickCheck][www.haskell.org/haskellwiki/Introduction_to_QuickCheck]]
